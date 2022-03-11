@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>iSEA: An Interactive Pipeline of Semantic Error Analysis</title>
+<link rel="icon" type="image/png" href="static/icon/iSEA_logo_small.png">
+
+<base href="../" target="_blank">
+
+<!--
+  /*
+ * Copyright (c) 2022, salesforce.com, inc.
+ * All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+ */
+ -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poiret+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://rawgit.com/tpreusse/radar-chart-d3/master/src/radar-chart.css">
+  <link rel="shortcut icon" href="#">
+
+  <link rel="stylesheet" href="static/css/skeleton.css">
+  <link rel="stylesheet" href="static/css/normalize.css">
+  <link rel="stylesheet" href="static/css/style.css">
+  <script src="https://d3js.org/d3-color.v2.min.js"></script>
+  <script src="https://d3js.org/d3-interpolate.v2.min.js"></script>
+  <script src="https://d3js.org/d3-scale-chromatic.v2.min.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@1,100&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- predefined dashed pattern -->
+  <svg id="false_pattern_svg" width="0" height="0">
+    <pattern id="error_pattern" patternUnits="userSpaceOnUse" width="4" height="4">
+      <rect width="4" height="4" fill="white"></rect>
+      <path d="M-1,1 l2,-2
+               M0,4 l4,-4
+               M3,5 l2,-2" 
+            style="stroke:black; stroke-width:1;" />
+    </pattern>
+    <pattern id="error_pattern_blue" patternUnits="userSpaceOnUse" width="4" height="4">
+        <rect width="4" height="4" fill="#9ecae1"></rect>
+        <path d="M-1,1 l2,-2
+                 M0,4 l4,-4
+                 M3,5 l2,-2" 
+              style="stroke:black; stroke-width:1;" />
+      </pattern>
+  </svg>
+
+  <div id="myModel" class="model">
+    <!-- Model content -->
+    <div class="model-content">
+      <div>
+        <h5>Parameter Settings for Rule Generation</h5>
+      </div>
+      <div class="col">
+        <div>
+          <span title="lower bound of support">p-value threshold: </span>
+          <input id="p_val" value=0.05>
+        </div>     
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="col">
+      <div class="header row">
+        <!-- <h1>iSEA</h1> -->
+        <img src="static/icon/iSEA_logo.png" style="width: 160px; margin-right: 50px;">
+        <div class="choice">
+          <span class="filter-title">Dataset:</span>
+          <select id="data_select">
+<!--             <option value="twitter_binary">twitter-roberta-base-sentiment/tweet</option>
+            <option value="mnlitravel_binary">distilbert/MNLI_gov_travel</option> -->
+          </select>
+        </div>
+      </div>
+    </div>  
+    <!-- Placeholder for dropdown menus -->
+
+    <div class="row" style="justify-content: center">
+      <div class="col">
+          <div id="errorView" class="outer" style="width: 350px; height: 400px">
+            <div class="title">
+              <p>Model Performance Overview</p>
+            </div>
+            <div class="col" style="margin-left: 5px;">
+                <div class="col" id="model_info" style="height: 100px">
+                  <p><span class="name">Dataset:</span> <span id="dataname"></span></p>
+                  <p><span class="name">Model:</span> <span id="modelname"></span></p>
+                  <p>Accuracy: <span id="acctext"></span>; &nbsp; Error Rate: <span id="errtext"></span></p>
+                  <p>Data Size: <span id="datasize"></span> </p>
+                </div>
+            </div>
+            <div class="col" style="margin-left: 5px;">
+              <div class="col" style="height: 150px">
+                <div><span class="name">Top 10 Tokens/Phrases</span></div>
+                <div id="token_list" style="max-height: 120px; overflow: auto;">
+                  <svg></svg>
+                </div>
+              </div>
+              <div class="col" style="height: 140px">
+                <div><span class="name">Top 5 High-level Features</span></div>
+                <div id="hfeat_list" style="max-height: 120px; overflow: auto;">
+                  <svg></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="statView" class="outer" style="width: 350px; height: 500px;">
+            <!-- Tab links -->
+            <div class="tab flex-row title">
+              <button class="tablinks active" onclick="clickStatTab(event, 'model_stat')">
+                Overall Stat.
+              </button>
+              <button class="tablinks" onclick="clickStatTab(event, 'select_stat')">
+                Subpopulation Stat.
+              </button>
+            </div>
+
+            <svg id="stat_legend" width="300px" height="32px" style="font-size: 16px"></svg>
+            <div class="flex-col tabcontent" id="model_stat" style="display: block; margin-top:-5px;">
+              <div class="col" style="width: 320px; max-height: 420px; overflow: auto;">
+                <div>
+                  <svg class="stat_svg"></svg>
+                </div>
+              </div>
+            </div>
+
+            <div id="select_stat" class="flex-col tabcontent">
+              <p style="margin-bottom: 0;">&nbsp <span id="stat_rid">no rule</span> selected.</p>
+              <div id="selectView" style="width: 320px; height: 400px; overflow: scroll;">
+                <div class="col" style="width: 320px; max-height: 420px; overflow: auto;">
+                  <div>
+                    <svg class="stat_svg"></svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          
+      </div>
+
+      <!-- Validation -->
+      <div class="col">
+        <div class="row">
+          <div id="ruleView" class="outer" style="width: 590px; height: 400px">
+            <div class="title">
+              <p>Rule Discovery</p>
+            </div>
+            <div style="visibility: hidden; height: 5px;">
+              <canvas id="canvas" width=0 height=0></canvas>
+            </div>
+            <div id="rule_filtering_div" class="col" style="align-items: flex-start; justify-content: flex-start; margin-bottom: 10px;">
+              <div class="row">
+                <div class="filter_div">
+                  <span class="filter-title">Ordering</span>
+                  <select id="rule_order" value="error">
+                    <option value="error">error rate</option>
+                    <option value="support">support</option>
+                  </select>
+                </div>
+                <div class="filter_div" style="align-items: flex-end;">
+                  <span class="filter-title"># Condition: </span>
+                  <select id="rule_len" value="error">
+                    <option value="-1">All</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                  </select>
+                </div>
+                <div class="filter_div">
+                  <span class="filter-title">Significance Type:</span>
+                  <select id="sig_select">
+                    <option value="pval">p value</option>
+                    <option value="95ci">95% CI</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row filter_div" style="align-items: flex-end; padding-top: 5px;">
+                  <span class="filter-title" style="padding-top: 5px;">Error Rate</span>
+                  <div class="col">
+                    <svg id="rule_error_hist" width="100px" height="60px"></svg>
+                    <input type="range" min="0" max="100" value="0" class="slider" id="err_range" style="width: 100px; height:5px; margin-top: 5px;">
+                  </div>
+                  <span>></span><span id="err_select_num">0%: &nbsp</span>
+                  <span id="err_select_rule">____</span><span>&nbsp rules</span>
+                </div>
+            </div>
+            <div style="width: 400px; height:30px;">
+              <svg id="rule_list_header"></svg>
+            </div>
+            <div id="rule_div" style="max-width: 550px; max-height:250px; overflow: auto;">
+              <div >
+                <svg id='rule_list'></svg>
+              </div>
+            </div>
+          </div>
+
+          <div id="projectionView" class="outer" style="width: 350px; height: 400px">
+            <div class="title">
+              <p>Document Projection (<span id="proj_rid">all</span>)</p>
+            </div>
+            <svg id="projection_legend" width="300px" height="32px" style="font-size: 16px;"></svg>
+            <div class="flex-row" style="display: flex; justify-content: center;">
+              <div style="width: 300px; height: 300px">
+                <canvas id="projection" width=300 height=300></canvas> 
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="docView" class="outer" style="width: 950px; height: 500px">
+          <div class="title">
+            <p>Document Details in Subpopulation &nbsp &nbsp (<span id="text_rid">no rule selected</span>. num_err: <span id="text_err_num">0</span> /<span id="text_doc_num">0</span>)</p>
+          </div>
+          <div class="row" style="justify-content: flex-start;">
+            <div class="filter_div" style="align-items: flex-end;">
+              <span class="filter-title">Model Prediction (SHAP filter):</span>
+              <select id="shap_class" value="0">
+              </select>
+            </div>
+            <svg id="shap_legend" height="25px" width="250px"></svg>
+          </div>
+          <div id="shap_div" style="width: 950px; height: 100px; max-width: 950px; overflow: auto;">
+            <div>
+              <svg height=100 id="shap_overview"></svg>
+            </div>
+          </div>
+          <div id="doc_div" style="max-height: 310px; overflow: auto;">
+            
+          </div>
+        </div>
+      </div>
+
+      <!-- Hypothesis Testing -->
+      <div class="col">
+        <div id="playView" class="outer" style="width: 380px; height: 400px">
+            <div class="title">
+              <p>Rule Editor</p>
+            </div>
+            <div class="col">
+              <div id="condView" style="width: 360px; height: 220px; overflow: scroll;">
+                <div class="col" id="added_condition" style="margin-top: 10px;width: 360px; height:70px"></div>
+
+                <div class="filter_div" id="add_type_div" style="margin: 10px 0; justify-content:flex-start;">
+                  <span class="filter-title">new condition</span>
+                  <button id="add_token_btn" class="cond_type_btn clicked">token</button>
+                  <button id="add_concept_btn" class="cond_type_btn" disabled>concept</button>
+                  <button id="add_hfeat_btn" class="cond_type_btn">high-level</button>
+                </div>
+                <div class="row" id="cond_row" style="margin: 10px 0; justify-content:flex-start;">
+                  <span id="add_contain">contain:</span>
+                  <input type="text" id="word_to_add" style="width: 150px">
+                  <span id="add_equal" style="display:none">=</span>
+                  <input type="text" id="val_to_add" style="width: 80px; display: none;">
+                  <input class="icon_btn btn_round" id="add_cond" type="image" src="static/icon/plus.png" 
+                    title="add a new condition"
+                  onclick="">    
+                </div>
+                <div style="flex-direction: row; justify-content:flex-start;">
+                  <button id="submit_inspect" onclick="">Inspect New Rule</button>
+                  <button id="submit_reset">Reset</button>
+                </div>
+                <div>
+                  <!-- <span>hint (token/feature suggestion given the rule you inspected): -->
+                  <div id="hint_content">
+                  </div>
+                </div>
+              </div>
+              <div style="width: 450px; height: 300px;">
+                <svg id="cond_explore" style="width: 450px; height: 280px;"></svg>
+              </div>
+            </div>
+          </div>
+
+        <div id="conceptConstruction" class="outer">
+          <div class="title">
+            <p>Concept Construction</p>
+          </div>
+          <div id="conceptView" style="width: 360px; height: 440px; overflow: scroll;">
+
+          </div>
+          <div style="width: 340px; height: 30px; margin-left: 10px;">
+            <span>Click the button to add a concept</span>
+            <input class="icon_btn btn_round" id="add_concept" type="image" src="static/icon/plus.png" title="add a new condition">    
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+<script src="static/js/vis.js"></script>
+<script src="static/js/util.js"></script>
+<script src="static/js/statView.js"></script>
+<script src="static/js/docView.js"></script>
+<script src="static/js/ruleView.js"></script>
+<script src="static/js/exploreView.js"></script>
+<script src="static/js/errcorView.js"></script>
+<script src="static/js/projectionView.js"></script>
+<script src="static/js/conceptView.js"></script>
+<script src="static/js/main.js"></script>
+
+</html>

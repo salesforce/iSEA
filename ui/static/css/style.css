@@ -1,0 +1,442 @@
+/*
+ * Copyright (c) 2022, salesforce.com, inc.
+ * All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+ */
+
+
+* {
+  box-sizing: border-box;
+}
+
+h1 {
+   /*font-family: 'Poiret One', cursive;*/
+   font-family: 'Roboto';
+   padding-right: 50px;
+}
+
+body {
+  font-family: sans-serif, Arial, Helvetica,;
+}
+
+.title p {
+  margin: 0px 10px;
+}
+
+.header {
+  background-color: #f1f1f1;
+  padding: 2px;
+  font-size: 14px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: -20px;
+}
+
+.choice {
+  padding: 10px;
+}
+
+/* Container for flexboxes */
+.row {
+  display: -webkit-flex;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+/* Create three equal columns that sits next to each other */
+.col {
+  display: flex;
+  /*padding: 10px;*/
+  flex-direction: column;
+}
+
+/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+@media (max-width: 600px) {
+  .row {
+    -webkit-flex-direction: column;
+    flex-direction: column;
+  }
+}
+
+.outer {
+  border: 1px solid #ccc;
+  border-radius: 5px 15px 5px 5px;
+  margin: 5px;
+}
+
+.title {
+  border-bottom: 1px solid #ccc;
+  border-radius: 5px 15px 0px 0px;
+  background-color: #f1f1f1;
+}
+
+p.info {
+  margin: 0 5px;
+  font-size: 12px;
+}
+
+.concept_div {
+  overflow: scroll;
+  border: 1px solid #ccc;
+  margin: 5px;
+}
+
+.concept_div p {
+  margin: 0 2px;
+}
+
+.axis {
+  font: 15px sans-serif;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #D4D8DA;
+  stroke-width: 2px;
+  shape-rendering: crispEdges;
+}
+
+/*#radar {
+  position: absolute;
+  top: 50px;
+  left: 100px;
+}*/
+  
+.toolTip {
+  pointer-events: none;
+  position: absolute;
+    display: none;
+  min-width: 50px;
+  height: auto;
+  background: none repeat scroll 0 0 #ffffff;
+  padding: 9px 14px 6px 14px;
+  border-radius: 2px;
+  text-align: center;
+  line-height: 1.3;
+  color: #5B6770;
+  box-shadow: 0px 3px 9px rgba(0, 0, 0, .15);
+}
+.toolTip:after {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 12px solid white;
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  margin-left: -12px;
+}  
+.toolTip span {
+  font-weight: 500;
+  color: #081F2C;
+}
+
+/* The slider itself */
+.slider {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 100%; /* Full-width */
+  height: 10px; /* Specified height */
+  background: #d3d3d3; /* Grey background */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  transition: opacity .2s;
+}
+
+/* Mouse-over effects */
+.slider:hover {
+  opacity: 1; /* Fully shown on mouse-over */
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 10px; /* Set a specific slider handle width */
+  height: 10px; /* Slider handle height */
+  background: #de2d26; /* red background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+.slider::-moz-range-thumb {
+  width: 10px; /* Set a specific slider handle width */
+  height: 10px; /* Slider handle height */
+  background: #de2d26; /* red background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+
+/* Style the tab */
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 0px 16px;
+  height: 24px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+  background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+  background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+  display: none;
+  padding: 2px 12px;
+  /*border: 1px solid #ccc;*/
+  /*border-top: none;*/
+}
+
+.rule_back {
+  fill: none;
+}
+
+.rule_highlight {
+  fill: #F0F0F0;
+}
+
+.rule_selected {
+  fill: #DCDCDC;
+}
+
+.doc_box {
+  padding: 5px;
+  margin: 5px;
+  border: 1px solid gray;
+}
+
+.doc_box p,h5{
+  margin-bottom: 5px;
+}
+
+.filter_div{
+  margin: 0 10px;
+}
+
+.filter-title {
+  margin-right: 5px;
+  padding-bottom: 5px;
+  font-weight: bold;
+}
+
+.err_rate_txt {
+  font-size: 7;
+}
+
+/*css for path*/
+.node circle {
+  fill: #fff;
+  stroke: steelblue;
+  stroke-width: 3px;
+}
+
+.node text {
+  font: 12px sans-serif;
+}
+
+.link {
+  fill: none;
+  stroke: #ccc;
+  stroke-width: 2px;
+}
+
+/*cond view*/
+#added_condition {
+  border: solid 1px #ccc;
+  flex-flow: wrap;
+}
+
+#playView > .col {
+  margin-left: 10px;
+}
+
+/*icon button*/
+.icon_btn {
+  border_bottom: none; 
+  height: 25px;
+  padding-top: 5px;
+  margin-left: 10px;
+}
+
+.icon_btn.btn_round {
+  border: 1px solid #ccc;
+  padding: 5px;
+  margin-bottom: -5px;
+  border-radius: 50%;
+}
+
+/*condition div*/
+.cond_div {
+  display: flex;
+  background: rgba(192, 192, 192, .5);
+  margin: 2px;
+  height: 30px;
+  min-width: 100px;
+  border-radius: 5px;
+  justify-content: space-between;
+}
+
+.cond_div.no{
+  background: white;
+  border: 1px solid rgba(192, 192, 192, .8);
+}
+
+.cond_content {
+  margin: 2px;
+  padding: 0 5px;
+}
+
+/* The Model (background) */
+.model {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Model Content */
+.model-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 50%;
+  font-size: 16px;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+
+/*concept area*/
+.concept_div > div {
+  margin: 0 10px 5px 10px;
+}
+
+.concept_div svg {
+  font-size: 10px;
+}
+
+.concept_content {
+  width: 330px;
+}
+
+.concept_content_narrow {
+  width: 180px;
+}
+
+.concept_row1 {
+  justify-content: space-between;
+}
+
+.show_edit {
+  display: block;
+}
+
+.unshow_edit {
+  display: none;
+}
+
+.err_svg line{
+  stroke-width: 1.5px;
+}
+
+.remove_btn {
+  position: relative;
+  right: -10px;
+}
+
+#model_info p {
+  margin-bottom: 0;
+}
+
+.name {
+  font-weight: bold;
+}
+
+#add_type_div button{
+  padding: 0 5px;
+}
+
+#add_type_div button.clicked {
+  background-color: #DCDCDC;
+}
+
+#cond_row input {
+  margin: 0 10px;
+}
+
+.concept_row0 {
+  justify-content: space-between;
+  margin-left: 10px;
+}
+
+.concept_row0 span {
+  font-weight: bold;
+}
+
+.concept_name {
+  width: 300px;
+}
+
+/*#text_rid {
+  font-weight: bold;
+}*/
+
+#rule_filtering_div {
+  font-size: 13px;
+}
+
+.err_rate_txt {
+  fill: #C0C0C0;
+  font-size: 14px;
+}
+
+.err_rate_head {
+  font-size: 14px;
+}
+
+.high_rate {
+    fill: rgba(0,0,0,0.9);
+
+}
